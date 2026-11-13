@@ -7,13 +7,14 @@ set_site_information(
     author="Emma Highberger",
     description="Website containing free crossword puzzles that can be done online.",
     sources="Thanks to the Brigantine Times for the puzzles!",
-    planning=["plan.pdf", "design.pdf"],
-    links=["https://github.com/your-username/your-repository"]
+    planning=["Emma Highberger - CS1 Final Project 1_ Design.docx",
+              "LLM Conversations.pdf"],
+    links=["https://github.com/emmahighberger/crossword-puzzles"]
 )
 hide_debug_information()
 set_website_framed(False)
 # ----------------------------------------------------------------------------
-# CONSTANTS (global constants are allowed; there are no global variables)
+# CONSTANTS (including each puzzle's Qs and As)
 # ----------------------------------------------------------------------------
  
 BLACK = "#"
@@ -27,7 +28,7 @@ PUZZLE_TITLES = {
     4: "THE 2010s",
 }
  
-# Crossword 1 answer grid, one string per row. "#" is a black square.
+# Crossword 1 (BIRDS) answer grid, one string per row. "#" is a black square.
 SOLUTION_1 = [
     "USER##PAP###KAY",
     "TAXA#TILE#OPINE",
@@ -130,7 +131,7 @@ DOWN_CLUES_1 = {
     56: "Public health org.",
 }
  
-# Crossword 2 (baseball theme) answer grid. "#" is a black square.
+# Crossword 2 (BASEBALL) answer grid. "#" is a black square.
 SOLUTION_2 = [
     "SCUBA#ASH##ROCK",
     "POPUP#RAY#BOULE",
@@ -237,6 +238,8 @@ DOWN_CLUES_2 = {
     66: "*Umpire's blown call",
 }
 
+# Crossword 3 (AT AN AMUSEMENT PARK) answer grid. "#" is a black square.
+
 SOLUTION_3 = [
     "SHOE##CPA##LIED",
     "CERN#HAIR#GUNNY",
@@ -338,6 +341,8 @@ DOWN_CLUES_3 = {
     55: "Popular movie candy",
     56: "Something to chew on",
 }
+
+# Crossword 2 (THE 2010s) answer grid. "#" is a black square.
 
 SOLUTION_4 = [
     "SWAG##CAM###NTH",
@@ -466,11 +471,18 @@ class State:
  
  
 # ----------------------------------------------------------------------------
-# GRID HELPERS (plain functions, not routes)
+# HELPER FUNCTIONS
 # ----------------------------------------------------------------------------
  
 def get_solution(puzzle: int) -> list[str]:
-    """The answer grid for the given crossword."""
+    """
+    This function returns the correct solution for the puzzle,
+    based on puzzle number.
+    Args:
+        puzzle (int): puzzle number
+    Returns:
+        list[str]: answer key
+    """
     if puzzle == 2:
         return SOLUTION_2
     if puzzle == 3:
@@ -481,7 +493,15 @@ def get_solution(puzzle: int) -> list[str]:
  
  
 def get_clue_text(puzzle: int, direction: str) -> dict[int, str]:
-    """The clue-number -> clue-text dictionary for a crossword and direction."""
+    """
+    This function takes the puzzle numver and direction, and returns
+    the clue-text dictionary for the crossword and direction.
+    Args:
+        puzzle (int): puzzle number
+        direction (str): down or across
+    Returns:
+        dict[int, str]: clue-text dictionary
+    """
     if puzzle == 2:
         if direction == "Across":
             return ACROSS_CLUES_2
@@ -500,24 +520,58 @@ def get_clue_text(puzzle: int, direction: str) -> dict[int, str]:
  
  
 def is_white(puzzle: int, row: int, col: int) -> bool:
-    """True if (row, col) is on the board and is not a black square."""
+    """
+    This function determines if a cell on the grid should be
+    a blanksquare (black) or if it is a regular cell.
+    True if (row, col) is on the board and is not a black square.
+    Args:
+        puzzle (int): puzzle number
+        row (int): row the cell is in
+        col (int): column the cell is in
+    Returns:
+        bool: is or is not a black square
+    """
     if row < 0 or col < 0 or row >= SIZE or col >= SIZE:
         return False
     return get_solution(puzzle)[row][col] != BLACK
  
  
 def starts_across(puzzle: int, row: int, col: int) -> bool:
+    """
+    This function determines if each cell is playable and unique in the acrosses
+    puzzle (int): puzzle number
+        row (int): row the cell is in
+        col (int): column the cell is in
+    Returns:
+        bool: if it is or is not playable and unique
+    """
     return (is_white(puzzle, row, col) and not is_white(puzzle, row, col - 1)
             and is_white(puzzle, row, col + 1))
  
  
 def starts_down(puzzle: int, row: int, col: int) -> bool:
+    """
+    This function determines if each cell is playable and unique in the downs
+    puzzle (int): puzzle number
+        row (int): row the cell is in
+        col (int): column the cell is in
+    Returns:
+        bool: if it is or is not playable and unique
+    """
     return (is_white(puzzle, row, col) and not is_white(puzzle, row - 1, col)
             and is_white(puzzle, row + 1, col))
  
  
 def read_answer(puzzle: int, row: int, col: int, direction: str) -> str:
-    """Collect the letters of the word that starts at (row, col)."""
+    """
+    This functuon collects the letters of the word that starts at (row, col).
+    Args:
+        puzzle (int): puzzle number
+        row (int): row the cell is in
+        col (int): column the cell is in
+    Returns:
+        str: the letter in that cell
+    """
     solution = get_solution(puzzle)
     letters = ""
     while is_white(puzzle, row, col):
@@ -530,11 +584,26 @@ def read_answer(puzzle: int, row: int, col: int, direction: str) -> str:
  
  
 def cell_key(puzzle: int, row: int, col: int) -> str:
+    """
+    This function creates a key for each cell's placement.
+    Args:
+        puzzle (int): puzzle number
+        row (int): row number
+        col (int): column number
+    Returns:
+        str: the cell's placement
+    """
     return f"cell_{puzzle}_{row}_{col}"
  
  
 def cell_numbers(puzzle: int) -> dict[str, int]:
-    """Number the grid the standard way, left to right, top to bottom."""
+    """
+    This function numbers the grid, left to right, top to bottom.
+    Args:
+        puzzle (int): puzzle number
+    Returns:
+        dict[str, int]: grid numbers
+    """
     numbers = {}
     count = 0
     for row in range(SIZE):
@@ -546,12 +615,25 @@ def cell_numbers(puzzle: int) -> dict[str, int]:
  
  
 def clue_field(clue: Clue) -> str:
+    """
+    This function accesses the clue field.
+    Args:
+        clue (Clue): each clue
+    Returns:
+        str: the clue field
+    """
     return f"clue_{clue.puzzle}_{clue.direction[0]}_{clue.number}"
  
  
 def build_clues(puzzle: int) -> list[Clue]:
-    """Create every Clue (across first, then down) for one crossword
-    from its grid + clue text."""
+    """
+    This function creates every Clue (across first, then down) for one crossword
+    from its grid + clue text.
+    Args:
+        puzzle (int): puzzle number
+    Returns:
+        list[Clue]: clues for the given puzzle
+    """
     numbers = cell_numbers(puzzle)
     across_text = get_clue_text(puzzle, "Across")
     down_text = get_clue_text(puzzle, "Down")
@@ -570,6 +652,13 @@ def build_clues(puzzle: int) -> list[Clue]:
  
  
 def count_white_cells(puzzle: int) -> int:
+    """
+    This function counts the amount of white cells in the grid.
+    Args:
+        puzzle (int): puzzle number
+    Returns:
+        int: total of white cells
+    """
     total = 0
     for row in range(SIZE):
         for col in range(SIZE):
@@ -579,6 +668,14 @@ def count_white_cells(puzzle: int) -> int:
  
  
 def count_correct(puzzle: int, entries: dict[str, str]) -> int:
+    """
+    This function counts the total of correctly filled cells in the grid.
+    Args:
+        puzzle (int): puzzle number
+        entries (dict[str, str]): the user's input for each cell
+    Returns:
+        int: total of correct inputs
+    """
     solution = get_solution(puzzle)
     correct = 0
     for row in range(SIZE):
@@ -590,7 +687,14 @@ def count_correct(puzzle: int, entries: dict[str, str]) -> int:
  
  
 def is_checked(value) -> bool:
-    """Form values for check boxes may arrive as a bool or as text."""
+    """
+    This function forms values for check boxes,
+    may arrive as a bool or as text.
+    Args:
+        value (bool or str): what the cell is, blank, black or filled
+    Returns:
+        bool: if the cell is correct
+    """
     if isinstance(value, bool):
         return value
     return str(value).strip().lower() in ("true", "on", "1", "yes")
@@ -601,6 +705,17 @@ def is_checked(value) -> bool:
 # ----------------------------------------------------------------------------
  
 def build_cell(state: State, puzzle: int, row: int, col: int, numbers: dict[str, int]):
+    """
+    This function starts to set up the board, and creates the properties for each cell
+    Args:
+        state (State): State
+        puzzle (int): puzzle number
+        row (int): row number
+        col (int): column number
+        numbers (dict[str, int]):
+    Returns:
+        creates borders and sets up the board cells
+    """
     size = "36px"
     if not is_white(puzzle, row, col):
         return Div(style_width=size, style_height=size,
@@ -629,6 +744,14 @@ def build_cell(state: State, puzzle: int, row: int, col: int, numbers: dict[str,
  
  
 def build_grid(state: State, puzzle: int):
+    """
+    This function creates the puzzle grid.
+    Args:
+        state (State): State
+        puzzle (int): puzzle number
+    Returns:
+        creates the cell rows
+    """
     numbers = cell_numbers(puzzle)
     rows = []
     for row in range(SIZE):
@@ -640,6 +763,15 @@ def build_grid(state: State, puzzle: int):
  
  
 def build_clue_column(state: State, puzzle: int, direction: str):
+    """
+    This function creates the clue column on the right side of the page.
+    Args:
+        state (State): State
+        puzzle (int): puzzle number
+        direction (str): down or across
+    Returns:
+        creates the questions column on the right side of the screen.
+    """
     items = [Header(direction.upper(), 3)]
     for clue in state.clues:
         if clue.puzzle == puzzle and clue.direction == direction:
@@ -653,6 +785,13 @@ def build_clue_column(state: State, puzzle: int, direction: str):
  
  
 def puzzle_page(state: State) -> Page:
+    """
+    This function creates the page for each puzzle.
+    Args:
+        state (State): State
+    Returns:
+        Page: each puzzle page
+    """
     puzzle = state.current_puzzle
     clue_panel = Div(build_clue_column(state, puzzle, "Across"),
                      build_clue_column(state, puzzle, "Down"),
@@ -674,12 +813,22 @@ def puzzle_page(state: State) -> Page:
  
  
 def centered(component):
-    """Put one component on its own centered line."""
+    """
+    This function centers items on the page.
+    Args:
+        component: item to be centered
+    Returns:
+        that component plus the necessary arguments to center it
+    """
     return Div(component, style_text_align="center")
 
 
 def make_state() -> State:
-    """A fresh State holding every clue for all four crosswords."""
+    """
+    This cuntion creates a State holding every clue for all four crosswords.
+    Returns:
+        State: new state
+    """
     return State(build_clues(1) + build_clues(2) + build_clues(3) + build_clues(4),
                  {}, 0,
                  {"1": 0, "2": 0, "3": 0, "4": 0},
@@ -692,6 +841,13 @@ def make_state() -> State:
  
 @route
 def index(state: State) -> Page:
+    """
+    This function creates the start page.
+    Args:
+        state (State): State
+    Returns:
+        Page: start page
+    """
     state.current_puzzle = 0
     return Page(state, [
         centered(Header("Online Crossword Puzzles", 1)),
@@ -707,32 +863,66 @@ def index(state: State) -> Page:
 
 @route
 def crossword_1(state: State) -> Page:
+    """
+    This function creates the page for crossword 1.
+    Args:
+        state (State): State
+    Returns:
+        Page: crossword page
+    """
     state.current_puzzle = 1
     return puzzle_page(state)
  
  
 @route
 def crossword_2(state: State) -> Page:
+    """
+    This function creates the page for crossword 2.
+    Args:
+        state (State): State
+    Returns:
+        Page: crossword page
+    """
     state.current_puzzle = 2
     return puzzle_page(state)
  
  
 @route
 def crossword_3(state: State) -> Page:
+    """
+    This function creates the page for crossword 3.
+    Args:
+        state (State): State
+    Returns:
+        Page: crossword page
+    """
     state.current_puzzle = 3
     return puzzle_page(state)
  
  
 @route
 def crossword_4(state: State) -> Page:
+    """
+    This function creates the page for crossword 4.
+    Args:
+        state (State): State
+    Returns:
+        Page: crossword page
+    """
     state.current_puzzle = 4
     return puzzle_page(state)
  
  
 @route
 def update_puzzle(state: State, **fields) -> Page:
-    """Save every letter the user typed, apply the clue check boxes,
-    and recount how many cells are correct (for the open puzzle only)."""
+    """
+    This function saves every letter the user typed, applies the clue check boxes,
+    and recounts how many cells are correct (for the open puzzle only).
+    Args:
+        state (State): State
+    Returns:
+        Page: updates the current crossword page
+    """
     puzzle = state.current_puzzle
  
     for name, value in fields.items():
@@ -753,7 +943,13 @@ def update_puzzle(state: State, **fields) -> Page:
  
 @route
 def reset_puzzle(state: State) -> Page:
-    """Clear only the puzzle that is currently open."""
+    """
+    This function clears only the puzzle that is currently open.
+    Args:
+        state (State): State
+    Returns:
+        Page: updates the current crossword page
+    """
     puzzle = state.current_puzzle
     prefix = f"cell_{puzzle}_"
  
